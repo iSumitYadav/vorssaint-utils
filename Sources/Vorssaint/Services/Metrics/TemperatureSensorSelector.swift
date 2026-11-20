@@ -12,6 +12,7 @@ enum CPUTemperaturePlatform: Equatable {
     case appleM4ProFamily
     case appleM4MaxFamily
     case appleM5Family
+    case intel
     case unmappedAppleSilicon
     case generic
 }
@@ -74,8 +75,14 @@ enum TemperatureSensorSelector {
         "Tp0m", "Tp0p", "Tp0u", "Tp0y",
     ]
 
+    // Sensor labels documented by the community Intel x86_64 workaround.
+    private static let intelCPUCoreKeys: Set<String> = [
+        "TC1C", "TC2C", "TC3C", "TC4C",
+    ]
+
     static func platform(brandString: String?) -> CPUTemperaturePlatform {
         let brand = brandString?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if brand.range(of: "Intel", options: .caseInsensitive) != nil { return .intel }
         // Preserve the established Tp/Te reading path for this supported chip
         // until a verified per-core map is available.
         if brand == "Apple A18 Pro" { return .generic }
@@ -153,7 +160,7 @@ enum TemperatureSensorSelector {
     static func hasCPUCoreSet(platform: CPUTemperaturePlatform) -> Bool {
         switch platform {
         case .appleM1Family, .appleM2Family, .appleM3Family, .appleM4Family,
-             .appleM4ProFamily, .appleM4MaxFamily, .appleM5Family:
+             .appleM4ProFamily, .appleM4MaxFamily, .appleM5Family, .intel:
             return true
         case .unmappedAppleSilicon, .generic: return false
         }
@@ -173,6 +180,8 @@ enum TemperatureSensorSelector {
             return appleM4ProMaxCPUCoreKeys.contains(key)
         case .appleM5Family:
             return appleM5CPUCoreKeys.contains(key)
+        case .intel:
+            return intelCPUCoreKeys.contains(key)
         case .unmappedAppleSilicon, .generic:
             return false
         }
@@ -180,6 +189,10 @@ enum TemperatureSensorSelector {
 
     static func isCPUTemperatureKey(_ key: String,
                                     platform: CPUTemperaturePlatform) -> Bool {
+        if platform == .intel {
+            // TCGC is the Intel GPU sensor, not a CPU temperature sensor.
+            return key.hasPrefix("TC") && key != "TCGC"
+        }
         if key.hasPrefix("Tp") || key.hasPrefix("Te") { return true }
         return platform == .appleM3Family && key.hasPrefix("Tf")
     }
