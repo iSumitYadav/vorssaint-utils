@@ -4,8 +4,8 @@ This document records the community Intel x86_64 adaptations maintained in this 
 
 ## Scope
 
-- Target architecture: `x86_64-apple-macosx15.0`
-- Minimum deployment target: macOS 15.0
+- Target architecture: `x86_64-apple-macosx14.0`
+- Minimum deployment target: macOS 14.0
 - Build tools: Apple's Xcode Command Line Tools, Swift, Clang, Git, and Python 3
 - No Homebrew packages, external Swift packages, or paid Apple Developer account are required for a local ad-hoc-signed build.
 
@@ -85,3 +85,57 @@ git diff --cached --check
 git commit -m "Add Intel macOS build support"
 git push -u origin intel-macos-x86_64
 ```
+
+## Hardware-verified configuration (2026-11-20)
+
+### Test machine
+
+| Property | Verified configuration |
+|---|---|
+| Mac model | MacBookPro15,4 (2019, 13-inch) |
+| Processor | Intel Core i5-8257U |
+| Architecture | x86_64 |
+| macOS | 15.8.3 (24H241) |
+| Swift | 6.1.2 |
+| Clang | 17.0.0 |
+| macOS SDK | 15.5 |
+| Minimum deployment target | macOS 14.0 |
+
+### Verified temperature sensors
+
+The following SMC sensors were detected and correctly classified
+on the test machine:
+
+| Component | SMC keys |
+|---|---|
+| CPU cores | TC1C, TC2C, TC3C, TC4C |
+| GPU | TCGC |
+| CPU auxiliary | TC0E, TC0F, TC0P, TCMX, TCSA, TCXC |
+| Battery | TB0T, TB1T, TB2T |
+
+All four CPU core sensors and the GPU sensor returned valid
+temperature readings.
+
+### Build and test verification
+
+- Release build completed successfully.
+- Main application compiled as native x86_64.
+- Fan-control helper compiled as native x86_64.
+- Now Playing adapter compiled as native x86_64.
+- Application bundle passed strict code-signature verification.
+- Bundle uses ad-hoc signing (no persistent signing identity).
+- Minimum macOS deployment version verified as 14.0.
+- Application self-test: SELFTEST OK.
+- Test suite: 123,246 checks passed.
+- Fan helper compilation self-test: passed.
+
+### Remaining runtime validation
+
+The following have not yet been validated:
+
+- Interactive GUI and menu-bar functionality.
+- Live fan RPM reporting through the GUI.
+- Privileged fan-control helper registration.
+- Actual fan-speed control and restoration.
+- Now Playing runtime integration.
+

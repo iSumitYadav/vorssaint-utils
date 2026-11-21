@@ -3236,7 +3236,16 @@ enum NotchTranslucentTint {
     static func stops(height: CGFloat, stripHeight: CGFloat, openness: Double,
                       increasedContrast: Bool) -> [(location: Double, opacity: Double)] {
         guard height > 0 else { return [(0, 1), (1, 1)] }
-        let depths = [0, stripHeight] + (1...8).map { stripHeight + rampLength * CGFloat($0) / 8 } + [height]
+
+        var depths: [CGFloat] = [0, stripHeight]
+
+        for step in 1...8 {
+            let rampOffset = rampLength * CGFloat(step) / 8
+            depths.append(stripHeight + rampOffset)
+        }
+
+        depths.append(height)
+
         return depths.filter { $0 >= 0 && $0 <= height }.map {
             (Double($0 / height), opacity(atDepth: $0, stripHeight: stripHeight,
                                           openness: openness, increasedContrast: increasedContrast))

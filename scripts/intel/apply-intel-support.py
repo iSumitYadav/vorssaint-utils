@@ -95,11 +95,11 @@ def main() -> int:
             files[relative_path] = PlannedFile(relative_path)
         return files[relative_path]
 
-    # build.sh: compile all native targets for Intel Macs running macOS 15+.
+    # build.sh: compile all native targets for Intel Macs running macOS 14+.
     get("build.sh").replace(
         "set native target to x86_64 macOS 15",
         'TARGET="arm64-apple-macosx14.0"',
-        'TARGET="x86_64-apple-macosx15.0"',
+        'TARGET="x86_64-apple-macosx14.0"',
     )
 
     selector_path = "Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift"
